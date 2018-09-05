@@ -2,10 +2,9 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title>FriendFinder Survey Page</title>
+	<title>Celebrity FriendFinder Survey</title>
 
 	<!-- Latest compiled and minified CSS & JS -->
-
 
 
 	<!-- Chosen -->
@@ -20,9 +19,10 @@
 	<!-- Font Awesome Glyphicons -->
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.1/css/font-awesome.min.css">
 
-		<!-- Chosen -->
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.5.1/chosen.css">
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.5.1/chosen.jquery.min.js"></script>
+	<!-- jQuery Reference -->
+<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+crossorigin="anonymous"></script>
+
 
 </head>
 
@@ -30,7 +30,7 @@
 
 	<div class="container">
 		<div>
-			<h2>Survey Questions</h2>
+			<h2>Survey</h2>
 			<h3><strong>Who are You?</strong></h3>
 			<h4>Name (Required)</h4>
 		<input type="text" name="" id="name" class="form-control" required >
@@ -165,7 +165,7 @@
 		<hr>
 	    <footer class="footer">
 	      <div class="container">
-		  <p><a href="/api/friends">API Friends List</a> | <a href="git@github.com:lvanok/FriendFinder.git">GitHub Repo</a></p>
+		  <p><a href="/api/friends">API Friends List</a></p>
 	      </div>
 	    </footer>
 
@@ -183,7 +183,7 @@
 	      </div>
 	      <div class="modal-body">
 	        <h2 id="matchName"></h2>
-	        <img id="matchImg" src="file:///Users/lisavanorden/Documents/RCB_files/week13_files/wk13_hw/friendfinder/assets/images/floya_avatar_pic.jpg" alt="">
+	        <img id="matchImg" src="/data/friends.js" alt="match">
 	      </div>
 	      <div class="modal-footer">
 	        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -193,63 +193,56 @@
 	  </div>
 	</div>
 
-<!-- //This section sends form data to the server -->
+<!-- jQuery Reference -->
+<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+crossorigin="anonymous"></script>
 
-  <script type="text/javascript">
-  	// Chosen CSS
-    var config = {
-      '.chosen-select'           : {},
-      '.chosen-select-deselect'  : {allow_single_deselect:true},
-      '.chosen-select-no-single' : {disable_search_threshold:10},
-      '.chosen-select-no-results': {no_results_text:'Oops, nothing found!'},
-      '.chosen-select-width'     : {width:"95%"}
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+crossorigin="anonymous"></script>
+<script>
+
+$(document).ready(function() {
+    console.log("ready!");
+
+// Grab the URL of the website
+var currentURL = window.location.origin;
+// Capture the form inputs
+$("#submit").on("click", function () {
+    //event.preventDefault();
+    if (($('#name').val().trim() !== "") && ($('#photo').val().trim() !== "")) {
+        // Create an object for the user's data
+        var userData = {
+            name: $("#name").val(),
+            photo: $("#photo").val(),
+            scores: [$("#q1").val(), $("#q2").val(), $("#q3").val(), $("#q4").val(), $("#q5").val(), $("#q6").val(), $("#q7").val(), $("#q8").val(), $("#q9").val(), $("#q10").val(),]
+        }
+        // AJAX post the data to the friends API.
+        $.post(currentURL + "/api/friends", userData, function (data) {
+            // Grab the result from the AJAX post so that the best match's name and photo are displayed.
+            $("#matchName").text(data.name);
+            $('#matchImg').attr("src", data.photo);
+            // Show the modal with the best match
+            $("#resultsModal").modal('toggle');
+            // clear the input fields in the form
+            $("#name").val("");
+            $("#photo").val("");
+        });
+    } else {
+        $(".modal-title").text("Missing required information");
+        $(".modal-body").html("<h3>Please complete the form before submitting</h3>");
+        $("#resultsModal").modal('toggle');
     }
-    for (var selector in config) {
-      $(selector).chosen(config[selector]);
-    }
-    // Capture the form inputs 
-    $("#submit").on("click", function(){
-    	// Form validation
-    	function validateForm() {
-		  var isValid = true;
-		  $('.form-control').each(function() {
-		    if ( $(this).val() === '' )
-		        isValid = false;
-		  });
-		  $('.chosen-select').each(function() {
-		  	if( $(this).val() === "")
-		  		isValid = false
-		  })
-		  return isValid;
-		}
-		// If all required fields are filled
-		if (validateForm() == true)
-		{
-			// Create an object for the user's data
-	    	var userData = {
-	    		name: $("#name").val(),
-	    		photo: $("#photo").val(),
-	    		scores: [$("#q1").val(), $("#q2").val(), $("#q3").val(), $("#q4").val(), $("#q5").val(), $("#q6").val(), $("#q7").val(), $("#q8").val(), $("#q9").val(), $("#q10").val(), ]
-	    	}
-	    	// Grab the URL of the website
-	    	var currentURL = window.location.origin;
-	    	// AJAX post the data to the friends API. 
-	    	$.post(currentURL + "/api/friends", userData, function(data){
-	    		// Grab the result from the AJAX post so that the best match's name and photo are displayed.
-	    		$("#matchName").text(data.name);
-	    		$('#matchImg').attr("src", data.photo);
-		    	// Show the modal with the best match 
-		    	$("#resultsModal").modal('toggle');
-	    	});
-		}
-		else
-		{
-			alert("Please fill out all fields before submitting!");
-		}
-    	
-    	return false;
-    });
-  </script>
+    return false;
+});
+// modal logic
+$('#closeModal').click(function () {
+    $.get('/', function (req, res) {
+        location.replace(res);
+    })
+});
+
+</script>
 
 
 </body>
